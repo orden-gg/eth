@@ -1,56 +1,116 @@
 # Configuration for a Dark Forest universe
 # Defined in TOML as per https://toml.io/en/v0.5.0
 
+# Note: You can set the default values for parameters that you don't list here in `settings.ts` 
+
 [initializers]
+# Allows custom planets to be added to the universe. Ex: a Lvl 9 Planet at (0,0)                                              
 ADMIN_CAN_ADD_PLANETS = true
+
+# If true, radius cannot grow or shrink.
 WORLD_RADIUS_LOCKED = false
-TOKEN_MINT_END_TIMESTAMP = 2021-10-05T04:00:00.000Z # Mon Oct 04 2021 21:00:00 GMT-0700 (Pacific Daylight Time)
+
+# Timestamp after which artifats can no longer be found
+TOKEN_MINT_END_TIMESTAMP = 2022-03-05T07:59:59.000Z # March 4, 2022, 11:59:59 PM (PST)
+
+# The floor for the target4 radius value. Not used unless > 65520.
+# See the _growRadius function in DarkForestUtils.sol for details.
 TARGET4_RADIUS = 1600
-INITIAL_WORLD_RADIUS = 8000
-ROUND_NAME = "0.6.6 round 4"
-ROUND_END = 2021-10-05T04:00:00.000Z # Mon Oct 04 2021 21:00:00 GMT-0700 (Pacific Daylight Time)
+
+# The initial world radius for the universe. 
+INITIAL_WORLD_RADIUS = 10000
+
+# Round name and end date
+ROUND_NAME = "ORDENGG battlefield"
+ROUND_END = 2022-03-05T07:59:59.000Z # March 4, 2022, 11:59:59 PM (PST)
 
 ##################################
 # SNARK keys & Perlin parameters #
 ##################################
-DISABLE_ZK_CHECKS = false
-PLANETHASH_KEY = 6278
-SPACETYPE_KEY = 6279
-BIOMEBASE_KEY = 6270
-PERLIN_MIRROR_X = false
-PERLIN_MIRROR_Y = false
+
+# For dev purposes, if true, enables a faster hash of the universe and no ZK CHECKS.
+# Make sure to always test your game with this param set to false before deploying.
+DISABLE_ZK_CHECKS = true
+
+# The following 3 values are the random seeds of the universe
+# Change these values before deploying for a freshly random universe.
+PLANETHASH_KEY = 1334 # Key for mimc hashing
+SPACETYPE_KEY = 1335 # Key for spacetype perlin 
+BIOMEBASE_KEY = 1330 # Key for biombase perlin
+
+# Enables mirroring of perlin values, for credibly neutral maps.
+# If both MIRROR X and Y are true, each quadrant of the universe will have same Space Type and Biome
+PERLIN_MIRROR_X = false # (x,y) => (|x|,y) for perlin.
+PERLIN_MIRROR_Y = false # (x,y) => (x,|y|) for perlin.
+
+# Determines the size of the regions of perlin noise.
 PERLIN_LENGTH_SCALE = 16384 # must be a power of two no greater than 16384
 
 ######################
 # Game configuration #
 ######################
+
+# The maximum level a planet can be. Unused because max is planetThresholds.length - 1, which is 9.
 MAX_NATURAL_PLANET_LEVEL = 256
-TIME_FACTOR_HUNDREDTHS = 600 # speedup/slowdown game
-PERLIN_THRESHOLD_1 = 14
-PERLIN_THRESHOLD_2 = 15
-PERLIN_THRESHOLD_3 = 19
-INIT_PERLIN_MIN = 13
-INIT_PERLIN_MAX = 14
-SPAWN_RIM_AREA = 0
+
+# Base value is 100, so 1000 is 10x the base speed.
+# This will multiply energy growth, silver growth, and move speed by this value.
+TIME_FACTOR_HUNDREDTHS = 6000 # speedup/slowdown game
+
+# Determines which the Perlin cutoffs for SpaceType
+# See spaceTypeFromPerlin(uint256 perlin) in DarkForestUtils.sol for details
+PERLIN_THRESHOLD_1 = 7
+PERLIN_THRESHOLD_2 = 14
+PERLIN_THRESHOLD_3 = 16
+
+# Determines the Perlin cutoffs for the SpaceType that players can spawn in.
+# See checkPlayerInit(...) in DarkForestPlanet.sol for details
+INIT_PERLIN_MIN = 1
+INIT_PERLIN_MAX = 31
+
+# If > 0, determines where players are allowed to spawn.
+# Players cannot spawn if their spawn planet's area is less than the spawn rim area.
+# Setting spawn rim area is based on the area of your world, so do some math
+# checkPlayerInit(...) in DarkForestPlanet.sol for details.
+SPAWN_RIM_AREA = 0 # for example 254340000 = (9k * 9k * 3.14)
+
+# Determines the Biome type based on Perlin cutoffs
+# See _getBiome(DarkForestTypes.SpaceType spaceType, uint256 biomebase) for details.
 BIOME_THRESHOLD_1 = 15
 BIOME_THRESHOLD_2 = 17
+
+# Determines how often planets will appear when hashing the universe. 
+# A lower number means planets will appear with greater frequency.
+# See  _locationIdValid(uint256 _loc) in DarkForestUtils.sol for details.
 PLANET_RARITY = 16384
+
+# The time you must wait after activating a photoid cannon before your next move.
+# TODO: Divide this value by the TIME_FACTOR_HUNDREDTHS
 PHOTOID_ACTIVATION_DELAY = 14400 # seconds
-LOCATION_REVEAL_COOLDOWN = 86400 # seconds
-CLAIM_PLANET_COOLDOWN = 10800 # seconds
+
+# The time you must wait in betwen revealing planets
+LOCATION_REVEAL_COOLDOWN = 1800 # seconds => 30 minutes
+
+# Time time you must wait in between claiming planets => only used for v0.6.3
+CLAIM_PLANET_COOLDOWN = 10800 # seconds => 3 hours
+
+# Determines the frequency of planet types based on SpaceType
+# See _getPlanetLevelTypeAndSpaceType in DarkForestUtils for details.
 PLANET_TYPE_WEIGHTS = [
+  # Nebula SpaceType
   [
-    [1, 0, 0, 0, 0],
-    [13, 2, 0, 1, 0],
-    [13, 2, 0, 1, 0],
+    [1, 0, 0, 0, 0], # Level 0
+    [13, 2, 0, 1, 0], # Level 1
+    [13, 2, 0, 1, 0], # Level 2
+    [13, 2, 0, 0, 1], # ...
     [13, 2, 0, 0, 1],
     [13, 2, 0, 0, 1],
     [13, 2, 0, 0, 1],
     [13, 2, 0, 0, 1],
     [13, 2, 0, 0, 1],
-    [13, 2, 0, 0, 1],
-    [13, 2, 0, 0, 1],
+    [13, 2, 0, 0, 1], # Level 9
   ],
+  # Space SpaceType
   [
     [1, 0, 0, 0, 0],
     [13, 2, 1, 0, 0],
@@ -63,6 +123,7 @@ PLANET_TYPE_WEIGHTS = [
     [12, 2, 1, 0, 1],
     [12, 2, 1, 0, 1],
   ],
+  # Deep Space SpaceType
   [
     [1, 0, 0, 0, 0],
     [10, 4, 2, 0, 0],
@@ -75,6 +136,7 @@ PLANET_TYPE_WEIGHTS = [
     [8, 4, 1, 2, 1],
     [8, 4, 1, 2, 1],
   ],
+  # Dead Space SpaceType
   [
     [1, 0, 0, 0, 0],
     [11, 4, 1, 0, 0],
@@ -88,8 +150,3 @@ PLANET_TYPE_WEIGHTS = [
     [7, 4, 2, 2, 1],
   ],
 ]
-
-
-##########################
-# Planets to add to game #
-##########################
