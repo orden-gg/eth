@@ -33,6 +33,10 @@ contract Whitelist is Initializable {
     }
 
     // public getters
+    function getAllWhitelistedAccounts() public view returns (address[] memory) {
+        return allowedAccountsArray;
+    }
+
     function getNAllowed() public view returns (uint256) {
         return allowedAccountsArray.length;
     }
