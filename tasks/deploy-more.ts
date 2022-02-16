@@ -4,13 +4,15 @@ import { Contract, Signer } from 'ethers';
 import { subtask, types } from 'hardhat/config';
 import { FactoryOptions, HardhatRuntimeEnvironment } from 'hardhat/types';
 import type {
+  DarkForestArtifactUtils,
   DarkForestCore,
   DarkForestCoreReturn,
   DarkForestGetters,
-  DarkForestGPTCredit,
-  DarkForestScoringRound3,
+  DarkForestPlanet,
   DarkForestTokens,
+  DarkForestUtils,
   LibraryContracts,
+  Verifier,
   Whitelist,
 } from '../task-types';
 
@@ -59,50 +61,6 @@ async function deployWhitelist(
     contractName: 'Whitelist',
     signerOrOptions: {},
     contractArgs: [args.controllerWalletAddress, args.whitelistEnabled],
-    deployOptions: {},
-    retries: 5,
-    hre,
-  });
-}
-
-subtask('deploy:gptcredits', 'deploy and return GPT credits contract')
-  .addParam('controllerWalletAddress', '', undefined, types.string)
-  .setAction(deployGPTCredits);
-
-async function deployGPTCredits(
-  args: { controllerWalletAddress: string },
-  hre: HardhatRuntimeEnvironment
-): Promise<DarkForestGPTCredit> {
-  return deployProxyWithRetry<DarkForestGPTCredit>({
-    contractName: 'DarkForestGPTCredit',
-    signerOrOptions: {},
-    contractArgs: [args.controllerWalletAddress],
-    deployOptions: {},
-    retries: 5,
-    hre,
-  });
-}
-
-subtask('deploy:score', 'deploy and return Scoring Contract')
-  .addParam('coreAddress', '', undefined, types.string)
-  .addParam('roundName', '', undefined, types.string)
-  .addParam('roundEnd', '', undefined, types.int)
-  .addParam('claimPlanetCooldown', '', undefined, types.int)
-  .setAction(deployScoreContract);
-
-async function deployScoreContract(
-  args: {
-    coreAddress: string;
-    roundName: string;
-    roundEnd: number;
-    claimPlanetCooldown: number;
-  },
-  hre: HardhatRuntimeEnvironment
-): Promise<DarkForestScoringRound3> {
-  return deployProxyWithRetry<DarkForestScoringRound3>({
-    contractName: 'DarkForestScoringRound3',
-    signerOrOptions: {},
-    contractArgs: [args.coreAddress, args.roundName, args.roundEnd, args.claimPlanetCooldown],
     deployOptions: {},
     retries: 5,
     hre,
@@ -162,11 +120,11 @@ async function deployLibraries({}, hre: HardhatRuntimeEnvironment): Promise<Libr
 
   return {
     lazyUpdate,
-    utils: utils,
-    planet: planet,
+    utils: utils as DarkForestUtils,
+    planet: planet as DarkForestPlanet,
     initialize,
-    verifier: verifier,
-    artifactUtils: artifactUtils,
+    verifier: verifier as Verifier,
+    artifactUtils: artifactUtils as DarkForestArtifactUtils,
   };
 }
 
