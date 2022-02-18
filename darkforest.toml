@@ -21,8 +21,8 @@ TARGET4_RADIUS = 1600
 INITIAL_WORLD_RADIUS = 10000
 
 # Round name and end date
-ROUND_NAME = "ORDENGG battlefield"
-ROUND_END = 2022-03-05T07:59:59.000Z # March 4, 2022, 11:59:59 PM (PST)
+# ROUND_NAME = "ORDENGG battlefield"
+# ROUND_END = 2022-03-05T07:59:59.000Z # March 4, 2022, 11:59:59 PM (PST)
 
 ##################################
 # SNARK keys & Perlin parameters #
